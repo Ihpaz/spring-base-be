@@ -1,15 +1,18 @@
 package com.api.api.controllers;
 
-import com.api.api.entity.Role;
-import com.api.api.models.request.RoleRequest;
+
+import com.api.api.models.request.*;
 import com.api.api.models.responses.RoleResponse;
+import com.api.api.models.responses.PagingResponse;
 import com.api.api.models.responses.WebResponse;
 import com.api.api.services.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
+import org.springframework.web.server.ResponseStatusException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/roles")
@@ -19,34 +22,93 @@ public class RoleController {
     private RoleService roleService;
 
     @GetMapping
-    public WebResponse<RoleResponse> getAllRoles() {
-        return roleService.getAllRoles();
+    public WebResponse<List<RoleResponse>> getAllRoles(@RequestParam(required = false) String role,
+                                                       @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+                                                       @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
+        RoleRequest request = RoleRequest.builder().role(role).build();
+
+        Page<RoleResponse> RoleResponse = roleService.getAllRoles(request);
+        return WebResponse.<List<RoleResponse>>builder()
+                .data(RoleResponse.getContent())
+                .paging(PagingResponse.builder()
+                        .currentPage(RoleResponse.getNumber())
+                        .totalPage(RoleResponse.getTotalPages())
+                        .size(RoleResponse.getSize())
+                        .build())
+                .build();
     }
 
-    @GetMapping("/{id}")
-    public WebResponse<RoleResponse> getRoleById(@PathVariable int id) {
-        Optional<Role> role = roleService.getRoleById(id);
-        return role.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    @GetMapping("/{uuid}")
+    public WebResponse<RoleResponse> getMenuById(@PathVariable String uuid) {
+        RoleResponse menu = roleService.getRoleById(uuid);
+        return WebResponse.<RoleResponse>builder().data(menu).build();
     }
+
 
     @PostMapping
-    public WebResponse<String> createRole(@RequestBody RoleRequest role) {
-        return roleService.createRole(role);
+    public WebResponse<String> createRole(@RequestBody AddRoleRequest request) {
+        try {
+            List<RoleMenuRequest> roleMenus = request.getRoleMenu() != null
+                    ? request.getRoleMenu().stream()
+                    .map(roleMenu -> RoleMenuRequest.builder()
+                            .menuId(roleMenu.getMenuId())
+                            .is_show(roleMenu.is_show())
+                            .is_deleted(roleMenu.is_deleted())
+                            .is_created(roleMenu.is_created())
+                            .is_updated(roleMenu.is_updated())
+                            .build())
+                    .collect(Collectors.toList())
+                    : null;
+
+            AddRoleRequest RoleRequest = AddRoleRequest.builder()
+                    .role(request.getRole())
+                    .roleMenu(roleMenus)
+                    .build();
+
+            roleService.createRole(RoleRequest);
+
+            return WebResponse.<String>builder().data("Role created").build();
+
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create role", e);
+        }
     }
 
-    @PutMapping("/{id}")
-    public WebResponse<RoleMenuResponse> updateRole(@PathVariable int id, @RequestBody Role roleDetails) {
+    @PutMapping("/{uuid}")
+    public WebResponse<RoleResponse> updateMenu(@PathVariable String uuid, @RequestBody UpdateRoleRequest request) {
         try {
-            Role updatedRole = roleService.updateRole(id, roleDetails);
-            return ResponseEntity.ok(updatedRole);
+
+            List<RoleMenuRequest> roleMenus = request.getRoleMenu() != null
+                    ? request.getRoleMenu().stream()
+                    .map(roleMenu -> RoleMenuRequest.builder()
+                            .menuId(roleMenu.getMenuId())
+                            .is_show(roleMenu.is_show())
+                            .is_deleted(roleMenu.is_deleted())
+                            .is_created(roleMenu.is_created())
+                            .is_updated(roleMenu.is_updated())
+                            .build())
+                    .collect(Collectors.toList())
+                    : null;
+
+            UpdateRoleRequest RoleRequest = UpdateRoleRequest.builder()
+                    .role(request.getRole())
+                    .roleMenu(roleMenus)
+                    .build();
+
+
+            RoleResponse updatedRole = roleService.updateRole(uuid, RoleRequest);
+
+
+            return WebResponse.<RoleResponse>builder().data(updatedRole).build();
+
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to update menu", e);
         }
     }
 
     @DeleteMapping("/{id}")
-    public WebResponse<Void> deleteRole(@PathVariable int id) {
+    public WebResponse<Void> deleteMenu(@PathVariable int id) {
         roleService.deleteRole(id);
-        return ResponseEntity.noContent().build();
+        return WebResponse.<Void>builder().build();
     }
 }

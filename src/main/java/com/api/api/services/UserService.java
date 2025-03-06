@@ -77,9 +77,24 @@ public class UserService {
 
     }
 
-    public Page<UserResponse> getUsers(Pageable pageable) {
+    public Page<UserResponse> getUsers(SearchUserRequest searchUserRequest) {
+        Specification<User> specification = ((root, query, criteriaBuilder) ->
+        {
+            List<Predicate> predicates = new ArrayList<>();
+            if (searchUserRequest.getUsername() != null) {
+                predicates.add(criteriaBuilder.like(root.get("username"), "%" + searchUserRequest.getUsername() + "%"));
+            }
 
-        Page<User> user = userRepository.findAll(pageable);
+            if (searchUserRequest.getRole() != null) {
+                Join<User, Role> roleJoin = root.join("role"); // Join role table
+                predicates.add(criteriaBuilder.like(roleJoin.get("role"), "%" + searchUserRequest.getRole() + "%"));
+            }
+
+            return query.where(predicates.toArray(new Predicate[]{})).getRestriction();
+        });
+
+        Pageable pageable = PageRequest.of(searchUserRequest.getPage(), searchUserRequest.getSize());
+        Page<User> user = userRepository.findAll(specification,pageable);
         List<UserResponse> userResponses= user.getContent().stream().map(this::toUserResponse)
                 .toList();
 

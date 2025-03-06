@@ -18,6 +18,11 @@ public class RoleMenu {
 
     private String uuid;
 
+    private boolean is_created;
+    private boolean is_updated;
+    private boolean is_deleted;
+    private boolean is_show;
+
     @ManyToOne
     @JoinColumn(name = "role_id",referencedColumnName = "id")
     private Role role;

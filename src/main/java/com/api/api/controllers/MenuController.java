@@ -26,7 +26,9 @@ public class MenuController {
 
     @GetMapping
     public WebResponse<List<MenuResponse>> getAllMenus(@RequestParam(required = false) String name,
-                                                       @RequestParam(required = false) Integer parentId) {
+                                                       @RequestParam(required = false) Integer parentId,@RequestParam(value = "username", required = false) String username,
+                                                       @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+                                                       @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
         MenuRequest request = MenuRequest.builder().name(name).parentId(parentId).build();
 
         Page<MenuResponse> menuResponse = menuService.getAllMenus(request);
