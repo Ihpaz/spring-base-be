@@ -1,4 +1,4 @@
-package com.api.api.models;
+package com.api.api.models.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

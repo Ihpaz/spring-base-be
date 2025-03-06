@@ -16,6 +16,8 @@ public class RoleMenu {
     @Id
     private int id;
 
+    private String uuid;
+
     @ManyToOne
     @JoinColumn(name = "role_id",referencedColumnName = "id")
     private Role role;

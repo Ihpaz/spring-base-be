@@ -19,6 +19,8 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)  // Auto-increment ID
     private int id;
 
+    private String uuid;
+
     private String role;
 
     @OneToMany(mappedBy = "role")

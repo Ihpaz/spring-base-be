@@ -1,19 +1,18 @@
-package com.api.api.models;
+package com.api.api.models.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class WebResponse<T> {
+public class RoleRequest {
 
-    private T data;
-
-    private String errors;
-
-    private PagingResponse paging;
+    private String role;
+    private List<RoleMenuRequest> roleMenu;
 }
