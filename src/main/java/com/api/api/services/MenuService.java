@@ -10,6 +10,7 @@ import com.api.api.models.responses.MenuResponse;
 import com.api.api.repository.MenuRepository;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,12 +37,11 @@ public class MenuService {
         {
             List<Predicate> predicates = new ArrayList<>();
             if (request.getName() != null) {
-                predicates.add(criteriaBuilder.like(root.get("username"), "%" + request.getName() + "%"));
+                predicates.add(criteriaBuilder.like(root.get("name"), "%" + request.getName() + "%"));
             }
 
             if (request.getParentId() != null) {
-                Join<User, Role> roleJoin = root.join("role"); // Join role table
-                predicates.add(criteriaBuilder.equal(roleJoin.get("role"), request.getParentId()));
+                predicates.add(criteriaBuilder.equal(root.get("parent_id"), request.getParentId()));
             }
 
             return query.where(predicates.toArray(new Predicate[]{})).getRestriction();
@@ -69,6 +69,7 @@ public class MenuService {
 //        return menuRepository.findByParentId(parentId);
 //    }
 
+    @Transactional
     public void createMenu(AddMenuRequest menu) {
         Menu newMenu = new Menu();
         Menu parentMenu = null;
@@ -85,6 +86,7 @@ public class MenuService {
         menuRepository.save(newMenu);
     }
 
+    @Transactional
     public Menu updateMenu(String uuid, UpdateMenuRequest request) {
 
         return menuRepository.findByUuid(uuid).map(menu -> {
@@ -114,6 +116,7 @@ public class MenuService {
                 .name(menu.getName())
                 .path(menu.getPath())
                 .icon(menu.getIcon())
+                .uuid(menu.getUuid())
                 .priority(menu.getPriority())
                 .parentId(menu.getParent() != null ? menu.getParent().getId() : null)
                 .build();

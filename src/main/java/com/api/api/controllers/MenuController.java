@@ -9,6 +9,7 @@ import com.api.api.models.responses.PagingResponse;
 import com.api.api.models.responses.WebResponse;
 import com.api.api.services.MenuService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/menus")
 @Validated
@@ -30,7 +32,7 @@ public class MenuController {
 
     @GetMapping
     public WebResponse<List<MenuResponse>> getAllMenus(@RequestParam(required = false) String name,
-                                                       @RequestParam(required = false) Integer parentId,@RequestParam(value = "username", required = false) String username,
+                                                       @RequestParam(required = false) Integer parentId,
                                                        @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
                                                        @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
         MenuRequest request = MenuRequest.builder()
@@ -98,13 +100,15 @@ public class MenuController {
                     .icon(updatedMenu.getIcon())
                     .name(updatedMenu.getName())
                     .path(updatedMenu.getPath())
+                    .uuid(updatedMenu.getUuid())
                     .priority(updatedMenu.getPriority())
-                    .parentId(updatedMenu.getParent().getId())
+                    .parentId(updatedMenu.getParent() != null ? updatedMenu.getParent().getId():null)
                     .build();
 
             return WebResponse.<MenuResponse>builder().data(menuResponse).build();
 
         } catch (RuntimeException e) {
+            log.error(e.getMessage(), e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to update menu", e);
         }
     }

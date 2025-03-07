@@ -31,7 +31,11 @@ public class RoleController {
     public WebResponse<List<RoleResponse>> getAllRoles(@RequestParam(required = false) String role,
                                                        @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
                                                        @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
-        RoleRequest request = RoleRequest.builder().role(role).build();
+        RoleRequest request = RoleRequest.builder()
+                .role(role)
+                .page(page)
+                .size(size)
+                .build();
 
         Page<RoleResponse> RoleResponse = roleService.getAllRoles(request);
         return WebResponse.<List<RoleResponse>>builder()
@@ -53,7 +57,7 @@ public class RoleController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<String> createRole(@Valid @RequestBody AddRoleRequest request) {
-        try {
+
             List<RoleMenuRequest> roleMenus = request.getRoleMenu() != null
                     ? request.getRoleMenu().stream()
                     .map(roleMenu -> RoleMenuRequest.builder()
@@ -75,9 +79,7 @@ public class RoleController {
 
             return WebResponse.<String>builder().data("Role created").build();
 
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create role", e);
-        }
+
     }
 
     @PutMapping(value = "/{uuid}",consumes = MediaType.APPLICATION_JSON_VALUE)

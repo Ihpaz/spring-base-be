@@ -14,6 +14,7 @@ import lombok.Setter;
 @Table(name = "role_menu")
 public class RoleMenu extends AuditMetaData {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     private String uuid;

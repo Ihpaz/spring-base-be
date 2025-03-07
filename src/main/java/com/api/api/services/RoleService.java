@@ -15,6 +15,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -53,7 +54,7 @@ public class RoleService {
         {
             List<Predicate> predicates = new ArrayList<>();
             if (request.getRole() != null) {
-                predicates.add(criteriaBuilder.like(root.get("username"), "%" + request.getRole() + "%"));
+                predicates.add(criteriaBuilder.like(root.get("role"), "%" + request.getRole() + "%"));
             }
 
             return query.where(predicates.toArray(new Predicate[]{})).getRestriction();
@@ -78,7 +79,7 @@ public class RoleService {
         }
     }
 
-
+    @Transactional
     public void createRole(AddRoleRequest request) {
         Role newRole = new Role();
         newRole.setUuid(UUID.randomUUID().toString());
@@ -95,13 +96,17 @@ public class RoleService {
 
             // Fetch the Menu entity using menuId
             Menu menu = menuRepository.findByUuid(roleMenuRequest.getMenuId())
-                    .orElseThrow(() -> new RuntimeException("Menu not found"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Menu not found"));
 
             roleMenu.setMenu(menu);
             roleMenu.set_created(roleMenuRequest.is_created());
             roleMenu.set_updated(roleMenuRequest.is_updated());
             roleMenu.set_deleted(roleMenuRequest.is_deleted());
             roleMenu.set_show(roleMenuRequest.is_show());
+            boolean exists = roleMenuRepository.existsByRoleAndMenu(newRole, menu);
+            if (exists) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "RoleMenu already exists for this Role and Menu");
+            }
 
             return roleMenu;
         }).collect(Collectors.toList());

@@ -1,5 +1,6 @@
 package com.api.api.repository;
 
+import com.api.api.entity.Menu;
 import com.api.api.entity.Role;
 import com.api.api.entity.RoleMenu;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,6 @@ public interface RoleMenuRepository extends JpaRepository<RoleMenu, Integer> , J
     Optional<RoleMenu> findByUuid(String uuid);
 
     void deleteByRole(Role existingRole);
+
+    boolean existsByRoleAndMenu(Role newRole, Menu menu);
 }
