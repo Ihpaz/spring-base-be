@@ -15,6 +15,7 @@ public class MenuRequest {
 
     private String name;
     private Integer parentId;
+
     @NotNull
     private Integer page;
 

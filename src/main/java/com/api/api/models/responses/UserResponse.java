@@ -12,8 +12,10 @@ import java.util.List;
 @Builder
 public class UserResponse {
 
+    private String uuid;
     private String username;
     private String name;
+    private String email;
     private String role;
     private List<String> menus;
 }

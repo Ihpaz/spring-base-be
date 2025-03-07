@@ -1,6 +1,8 @@
 package com.api.api.models.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,13 +16,13 @@ public class AddMenuRequest {
 
     @NotBlank
     private String name;
-    @NotBlank
     private Integer parentId;
     @NotBlank
     private String path;
     @NotBlank
     private String icon;
-    @NotBlank
+    @NotNull
+    @Positive
     private Integer priority;
 
 }

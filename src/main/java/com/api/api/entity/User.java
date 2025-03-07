@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -17,7 +18,7 @@ import java.util.Collections;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-public class User implements UserDetails {
+public class User extends AuditMetaData implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)  // Auto-increment ID
@@ -29,6 +30,12 @@ public class User implements UserDetails {
 
     private String password;
 
+    private String avatar;
+
+    private String email;
+
+    private String name;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptyList(); // You can return roles/authorities here if needed@ManyToOne
@@ -37,5 +44,8 @@ public class User implements UserDetails {
     @ManyToOne()
     @JoinColumn(name = "role_id",referencedColumnName = "id")
     private Role role;
+
+//    @Embedded
+//    private AuditMetaData auditMetadata;
 
 }

@@ -6,9 +6,11 @@ import com.api.api.models.responses.RoleResponse;
 import com.api.api.models.responses.PagingResponse;
 import com.api.api.models.responses.WebResponse;
 import com.api.api.services.RoleService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.api.api.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
@@ -18,8 +20,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/roles")
 public class RoleController {
 
-    @Autowired
-    private RoleService roleService;
+
+    private final RoleService roleService;
+
+    public RoleController(RoleService roleService) {
+        this.roleService = roleService;
+    }
 
     @GetMapping
     public WebResponse<List<RoleResponse>> getAllRoles(@RequestParam(required = false) String role,
@@ -45,8 +51,8 @@ public class RoleController {
     }
 
 
-    @PostMapping
-    public WebResponse<String> createRole(@RequestBody AddRoleRequest request) {
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<String> createRole(@Valid @RequestBody AddRoleRequest request) {
         try {
             List<RoleMenuRequest> roleMenus = request.getRoleMenu() != null
                     ? request.getRoleMenu().stream()
@@ -74,8 +80,8 @@ public class RoleController {
         }
     }
 
-    @PutMapping("/{uuid}")
-    public WebResponse<RoleResponse> updateMenu(@PathVariable String uuid, @RequestBody UpdateRoleRequest request) {
+    @PutMapping(value = "/{uuid}",consumes = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<RoleResponse> updateMenu(@Valid @PathVariable String uuid, @RequestBody UpdateRoleRequest request) {
         try {
 
             List<RoleMenuRequest> roleMenus = request.getRoleMenu() != null

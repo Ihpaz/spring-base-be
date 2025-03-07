@@ -12,23 +12,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RegisterUserRequest {
+public class UpdateUserRequest {
 
 
-    @NotBlank
     @Size(max = 100)
     private String password;
 
-    @NotBlank
     @Size(max = 100)
     private String username;
 
-    @NotBlank
     @Size(max = 100)
     private String name;
 
     @Email
-    @NotBlank
     @Size(max = 100)
     private String email;
 }

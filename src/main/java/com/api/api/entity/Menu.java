@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "menu")
-public class Menu {
+public class Menu extends AuditMetaData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)  // Auto-increment ID
     private int id;
@@ -27,6 +27,7 @@ public class Menu {
 
     private String icon;
 
+    @Column(name = "prioritize")
     private int priority;
 
     @ManyToOne
@@ -35,5 +36,8 @@ public class Menu {
 
     @OneToMany(mappedBy = "menu")
     private List<RoleMenu> roleMenu;
+
+//    @Embedded
+//    private AuditMetaData auditMetadata;
 
 }

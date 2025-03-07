@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "role_menu")
-public class RoleMenu {
+public class RoleMenu extends AuditMetaData {
     @Id
     private int id;
 
@@ -30,5 +30,8 @@ public class RoleMenu {
     @ManyToOne
     @JoinColumn(name = "menu-id",referencedColumnName = "id")
     private Menu menu;
+
+//    @Embedded
+//    private AuditMetaData auditMetadata;
 
 }

@@ -4,14 +4,18 @@ import com.api.api.entity.User;
 import com.api.api.models.request.RegisterUserRequest;
 import com.api.api.models.request.RoleRequest;
 import com.api.api.models.request.SearchUserRequest;
+import com.api.api.models.request.UpdateUserRequest;
 import com.api.api.models.responses.PagingResponse;
 import com.api.api.models.responses.RoleResponse;
 import com.api.api.models.responses.UserResponse;
 import com.api.api.models.responses.WebResponse;
+
 import com.api.api.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,15 +23,19 @@ import java.util.List;
 
 @RequestMapping("/api/user")
 @RestController
+@Validated
 public class UserController {
 
-    private UserService userService;
+    private final UserService userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping(
             path = "/",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<String> register(@RequestBody RegisterUserRequest request){
+    public WebResponse<String> register(@Valid @RequestBody RegisterUserRequest request){
             userService.registerUser(request);
 
             return  WebResponse.<String>builder().data("OK").build();
@@ -38,6 +46,7 @@ public class UserController {
     )
     public WebResponse<UserResponse> getUserWithRoleAndMenus(User currentUser){
         try {
+            System.out.println(currentUser);
             UserResponse userResponse = userService.getUserWithRoleAndMenus(currentUser);
             return WebResponse.<UserResponse>builder().data(userResponse).build();
 
@@ -47,11 +56,12 @@ public class UserController {
     }
 
     @PatchMapping(
-        path = "/",
+        path = "/{uuid}",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<UserResponse> updateUser(@RequestBody RegisterUserRequest request){
-        UserResponse userResponse= userService.updateUser(request);
+    public WebResponse<UserResponse> updateUser(@PathVariable String uuid,
+                                                @RequestBody UpdateUserRequest request){
+        UserResponse userResponse= userService.updateUser(uuid,request);
         return WebResponse.<UserResponse>builder().data(userResponse).build();
     }
 

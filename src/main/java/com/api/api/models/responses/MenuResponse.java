@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MenuResponse {
 
+    private String uuid;
     private String path;
     private String name;
     private String icon;

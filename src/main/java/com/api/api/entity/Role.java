@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "roles")
-public class Role {
+public class Role extends AuditMetaData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)  // Auto-increment ID
@@ -28,4 +28,7 @@ public class Role {
 
     @OneToMany(mappedBy = "role")
     private List<RoleMenu> roleMenu;
+
+//    @Embedded
+//    private AuditMetaData auditMetadata;
 }

@@ -4,12 +4,14 @@ import com.api.api.entity.Role;
 import com.api.api.entity.User;
 import com.api.api.models.request.RegisterUserRequest;
 import com.api.api.models.request.SearchUserRequest;
+import com.api.api.models.request.UpdateUserRequest;
 import com.api.api.models.responses.UserResponse;
 import com.api.api.repository.UserRepository;
 import com.api.api.security.BCrypt;
 import jakarta.persistence.criteria.Join;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,14 +40,23 @@ public class UserService {
 
     @Transactional
     public void registerUser(RegisterUserRequest user) {
-        if(userRepository.existsUserByUsername(user.getUsername())) {
-            log.info("User already exists with username {}", user.getUsername());
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already registered");
+        try {
+            if(userRepository.existsUserByUsername(user.getUsername())) {
+                log.info("User already exists with username {}", user.getUsername());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already registered");
+            }
+            User newUser = new User();
+            newUser.setUsername(user.getUsername());
+            newUser.setUuid(UUID.randomUUID().toString());
+            newUser.setName(user.getName());
+            newUser.setEmail(user.getEmail());
+            newUser.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
+            newUser.setAvatar("https://www.google.com/images/branding/google_logo.png");
+
+            userRepository.save(newUser);
+        }  catch (Exception e) {
+            throw new RuntimeException("User creation failed", e); // Will be caught by GlobalExceptionHandler
         }
-        User newUser = new User();
-        newUser.setUsername(user.getUsername());
-        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
-        userRepository.save(newUser);
     }
 
 
@@ -62,17 +74,35 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse updateUser(RegisterUserRequest request) {
-        User user = userRepository.findByUsername(request.getUsername())
+    public UserResponse updateUser(String uuid, UpdateUserRequest request) {
+       log.info("request ya",request);
+
+        User user = userRepository.findByUuid(uuid)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setUsername(request.getUsername());
-        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            user.setName(request.getName());
+        }
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            user.setEmail(request.getEmail());
+        }
+        if (request.getUsername() != null && !request.getUsername().trim().isEmpty()) {
+            user.setUsername(request.getUsername());
+        }
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            user.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
+        }
+
+//        user.setAvatar("https://www.google.com/images/branding/google_logo.png");
+
         userRepository.save(user);
 
         return UserResponse.builder()
                 .username(user.getUsername())
+                .name(user.getName())
+                .email(user.getEmail())
                 .role(user.getRole().getRole())
+                .uuid(user.getUuid())
                 .build();
 
     }
@@ -105,7 +135,10 @@ public class UserService {
     private UserResponse toUserResponse(User user) {
         return UserResponse.builder()
                 .username(user.getUsername())
-                .role(user.getRole().getRole())
+                .name(user.getName())
+                .email(user.getEmail())
+                .uuid(user.getUuid())
+                .role(user.getRole() != null ? user.getRole().getRole() : null)
                 .build();
     }
 

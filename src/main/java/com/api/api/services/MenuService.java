@@ -113,8 +113,9 @@ public class MenuService {
         return MenuResponse.builder()
                 .name(menu.getName())
                 .path(menu.getPath())
+                .icon(menu.getIcon())
                 .priority(menu.getPriority())
-                .parentId(menu.getParent().getId())
+                .parentId(menu.getParent() != null ? menu.getParent().getId() : null)
                 .build();
     }
 }
